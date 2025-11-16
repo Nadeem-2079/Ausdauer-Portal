@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AUSDAUER PORTAL</title>
+
+  <!-- SUPABASE JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #000000; --card-bg: #111111; --text: #ffffff; --border: #333333;
+      --accent: #a78bfa; --accent-hover: #7c3aed; --success: #10b981; --danger: #ef4444;
+      --warning: #f59e0b; --progress-bg: #1f1f1f; --input-bg: #1a1a1a;
+      --input-height: 3.2rem; --input-padding: 1rem;
+    }
+    body {background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;margin:0;padding:0;overflow-x:hidden;line-height:1.8;}
+    .card{background:var(--card-bg);border:1px solid var(--border);border-radius:1.2rem;transition:all .2s ease;break-inside:avoid;margin-bottom:1.5rem;}
+    .card:hover{box-shadow:0 8px 20px rgba(255,255,255,.05);transform:translateY(-2px);}
+    .navbar{background:#0a0a0a;border-bottom:1px solid var(--border);padding:.75rem 1rem;position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;font-size:.9rem;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+    .navbar img{height:36px;width:auto;}
+    .navbar h2{font-size:1rem;font-weight:700;margin:0;color:var(--text);}
+    input:not([type="file"]),select,textarea{background:var(--input-bg)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:.9rem;padding:0 var(--input-padding);height:var(--input-height);line-height:normal!important;font-size:1rem;width:100%;box-sizing:border-box;transition:border .2s ease,box-shadow .2s ease;display:flex!important;align-items:center!important;justify-content:flex-start;padding-left:1.1rem;}
+    textarea{height:auto;min-height:120px;padding:1rem;resize:vertical;}
+    input::placeholder,textarea::placeholder{color:#94a3b8!important;opacity:1;}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)!important;box-shadow:0 0 0 3px rgba(167,139,250,.2);}
+    .password-wrapper{position:relative;display:flex;align-items:center;}
+    .password-wrapper input{padding-right:3.5rem!important;width:100%;}
+    .password-toggle{position:absolute;right:1rem;background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1.1rem;padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;transition:color .2s ease;z-index:1;}
+    .password-toggle:hover{color:var(--accent);}
+    .btn{font-weight:600;border-radius:.9rem;padding:0 1.5rem;transition:all .2s ease;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-size:1rem;color:white;height:var(--input-height);min-width:100px;}
+    .btn:disabled{background:#4b5563;cursor:not-allowed;opacity:0.7;}
+    .btn i{font-size:1.1rem;}
+    .btn-primary{background:var(--accent);}
+    .btn-primary:hover{background:var(--accent-hover);transform:translateY(-1px);}
+    .btn-success{background:var(--success);}
+    .btn-success:hover{background:#0d9d6f;}
+    .btn-danger{background:var(--danger);}
+    .btn-danger:hover{background:#dc2626;}
+    .btn-outline{background:transparent;color:var(--text);border:1px solid var(--border);}
+    .btn-outline:hover{background:#222222;}
+    .progress-bar{height:8px;background:var(--progress-bg);border-radius:4px;overflow:hidden;margin-top:8px;}
+    .progress-fill{height:100%;background:var(--accent);border-radius:4px;width:0;transition:width .8s ease;}
+    .default-avatar{background:#222222;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-weight:bold;border:1px solid var(--border);}
+    .quote-box{background:#1a1a1a;border:1px dashed #6b46c1;border-radius:1.5rem;padding:2rem;text-align:center;margin:2rem 0;color:#d8b4fe;}
+    .quote{font-style:italic;font-size:1.2rem;font-weight:500;}
+    .quote-author{font-size:.95rem;opacity:.8;margin-top:.75rem;}
+    #toTopBtn{position:fixed;bottom:80px;right:20px;z-index:99;background:var(--accent);color:white;width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 12px rgba(167,139,250,.3);opacity:0;pointer-events:none;transition:all .3s ease;}
+    #toTopBtn.show{opacity:1;pointer-events:auto;}
+    #toTopBtn:hover{background:var(--accent-hover);transform:scale(1.1);}
+    .social-sidebar{position:fixed;left:16px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;z-index:98;}
+    .social-icon{width:44px;height:44px;background:#1a1a1a;border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text);font-size:1.2rem;transition:all .2s ease;}
+    .social-icon:hover{background:var(--accent);color:white;transform:scale(1.1);}
+    .mobile-social-bar{position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;border-top:1px solid var(--border);padding:.5rem 1rem;z-index:98;display:none;justify-content:center;gap:1.5rem;}
+    .mobile-social-bar a{color:var(--text);font-size:1.4rem;}
+    .toast{position:fixed;bottom:20px;right:20px;z-index:1000;background:#1f2937;color:white;padding:1rem 1.5rem;border-radius:.9rem;display:flex;align-items:center;gap:.75rem;box-shadow:0 8px 20px rgba(0,0,0,.3);font-size:.95rem;animation:slideIn .3s ease;}
+    @keyframes slideIn{from{transform:translateX(100%);}to{transform:translateX(0);}}
+    .masonry{column-count:1;column-gap:1.5rem;}
+    .task-card{background:#1a1a1a;border:1px solid var(--border);border-radius:1rem;padding:1rem;margin-bottom:1.5rem;break-inside:avoid;transition:transform .2s ease;}
+    .task-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(255,255,255,.06);}
+    .task-priority{font-size:.7rem;font-weight:600;padding:.25rem .5rem;border-radius:.5rem;display:inline-block;margin-bottom:.5rem;}
+    .priority-high{background:#450a0a;color:#fca5a5;}
+    .priority-medium{background:#451a03;color:#fcd34d;}
+    .priority-low{background:#172554;color:#93c5fd;}
+    #loginScreen .card{background:rgba(17,17,17,.7);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);padding:3rem 2rem;max-width:420px;}
+    .logo-container{background:rgba(255,255,255,.05);border-radius:1.5rem;padding:1.5rem;margin-bottom:2rem;display:inline-block;}
+    .photo-container{position:relative;display:inline-block;}
+    .photo-delete-btn{position:absolute;top:4px;right:4px;background:rgba(239,68,68,.9);color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;opacity:0;transition:opacity .2s ease;cursor:pointer;border:none;}
+    .photo-container:hover .photo-delete-btn{opacity:1;}
+    .notes-card{background:var(--card-bg);border:1px solid var(--border);border-radius:1.2rem;padding:1.5rem;transition:all .2s ease;margin-bottom:1.5rem;}
+    .notes-card:hover{box-shadow:0 8px 20px rgba(255,255,255,.05);transform:translateY(-2px);}
+    .notes-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;font-weight:600;font-size:1rem;color:#e2e8f0;}
+    .notes-title{display:flex;align-items:center;gap:.5rem;}
+    .notes-title i{color:#a78bfa;font-size:1.1rem;}
+    .notes-clear{color:#ef4444;font-size:.85rem;font-weight:500;cursor:pointer;padding:.25rem .5rem;border-radius:.5rem;transition:all .2s ease;}
+    .notes-clear:hover{background:rgba(239,68,68,.15);color:#fca5a5;}
+    .notes-textarea{background:#1a1a1a!important;border:1px solid #333!important;border-radius:.9rem;padding:1rem;font-size:.95rem;line-height:1.5;color:#e2e8f0;resize:vertical;min-height:160px;transition:border .2s ease;}
+    .notes-textarea:focus{border-color:#a78bfa!important;box-shadow:0 0 0 3px rgba(167,139,250,.15);}
+    .notes-footer{display:flex;justify-content:space-between;align-items:center;margin-top:.5rem;font-size:.75rem;color:#64748b;}
+    .auto-save{display:flex;align-items:center;gap:.3rem;}
+    .auto-save i{font-size:.7rem;color:#10b981;animation:pulse 2s infinite;}
+    @keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
+    .file-upload{position:relative;display:inline-block;width:100%;}
+    .file-upload input[type="file"] {position: absolute !important;height: 1px; width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);white-space: nowrap;}
+    .file-upload-label{display:flex;align-items:center;justify-content:center;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:.9rem;padding:0 1rem;height:var(--input-height);cursor:pointer;font-size:1rem;transition:all .2s ease;gap:.5rem;user-select:none;-webkit-user-select:none;}
+    .file-upload-label:hover{border-color:var(--accent);background:#222;}
+    .file-upload-label i{color:var(--accent);}
+    .file-name{font-size:.85rem;color:#94a3b8;margin-top:.5rem;text-align:center;}
+    @media (max-width:640px){
+      body{line-height:1.9;padding:1rem;}
+      .navbar{padding:.5rem .75rem;font-size:.8rem;}
+      .navbar img{height:30px;}
+      .navbar h2{font-size:.9rem;}
+      .navbar .date{display:none;}
+      #loginScreen .card{padding:2rem 1.5rem;}
+      .social-sidebar{display:none!important;}
+      .mobile-social-bar{display:flex;}
+      .card{padding:1.25rem;}
+      .quote-box{padding:1.5rem;margin:2rem 0;}
+      .quote{font-size:1rem;}
+      .quote-author{font-size:.85rem;}
+      .btn{font-size:.9rem;height:2.8rem;padding:0 1rem;}
+      .task-card{padding:.75rem;margin-bottom:1.25rem;}
+      .task-priority{font-size:.65rem;}
+      .notes-card{padding:1.25rem;}
+      .notes-textarea{min-height:130px;font-size:.9rem;}
+      .masonry{column-count:1!important;}
+      .grid-cols-2,.md\\:grid-cols-2,.lg\\:grid-cols-3,.xl\\:grid-cols-4{grid-template-columns:1fr;}
+      .flex.items-center.gap-6{flex-direction:column;align-items:center;text-align:center;gap:1rem;}
+      .photo-container{margin-bottom:1.5rem;}
+      #employeeModal .card{padding:1.5rem;}
+      #modalEditSection{flex-direction:column;}
+      #modalEditSection > div{width:100%;margin-bottom:1.5rem;}
+      .file-upload-label{font-size:.9rem;height:2.8rem;}
+      .file-name{font-size:.8rem;}
+      input,select,textarea,.btn{margin-bottom:1.25rem !important;}
+      .grid.gap-4{gap:1rem !important;}
+      .space-y-6 > * + *{margin-top:1.5rem !important;}
+    }
+    @media (min-width:640px){.masonry{column-count:2;}}
+    @media (min-width:1024px){.masonry{column-count:3;}}
+    @media (min-width:1280px){.masonry{column-count:4;}}
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- LOGIN SCREEN -->
+  <div id="loginScreen" class="flex items-center justify-center min-h-screen p-6">
+    <div class="card w-full max-w-md text-center">
+      <div class="logo-container">
+        <img src="logogogo-removebg-preview.png" alt="AUSDAUER GROUPS" class="w-64 h-auto mx-auto">
+      </div>
+      <h1 class="text-2xl font-bold mb-2">Welcome Back!</h1>
+      <p class="text-sm opacity-70 mb-8">Login to access your portal</p>
+      <input type="email" id="username" placeholder="Email" class="mb-4">
+      <div class="password-wrapper mb-6">
+        <input type="password" id="password" placeholder="Password" onkeypress="if(event.key==='Enter')handleLogin()">
+        <button type="button" class="password-toggle" onclick="togglePassword('password',this)">
+          <i class="fas fa-eye"></i>
+        </button>
+      </div>
+      <button id="loginButton" onclick="handleLogin()" class="btn btn-primary w-full text-lg font-semibold">Login</button>
+      <p class="text-xs opacity-60 mt-6">Contact admin if you're facing issues.</p>
+    </div>
+  </div>
+
+  <!-- ADMIN DASHBOARD -->
+  <div id="adminDashboard" class="hidden min-h-screen">
+    <div class="navbar">
+      <div class="flex items-center gap-4">
+        <img src="logogogo-removebg-preview.png" alt="Logo">
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="date" id="adminDate"></span>
+        <span id="adminTime"></span>
+      </div>
+    </div>
+    <br>
+    <div><h1 class="text-3xl font-bold text-center font-bold">Welcome , Admin!</h1><p class="text-lg opacity-70" id="chairWelcome"></p></div><br>
+    <div class="p-8 max-w-7xl mx-auto">
+      <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-3">
+        <div class="flex flex-wrap gap-3">
+          <button onclick="refreshCurrentPage()" class="btn btn-outline">Refresh</button>
+          <button onclick="openMessagesPanel()" class="btn btn-outline">
+            <i class="fas fa-comments"></i> Messages
+          </button>
+
+          <button onclick="downloadDailyReport()" class="btn btn-success">Report</button>
+          <button onclick="logout()" class="btn btn-danger">Logout</button>
+        </div>
+      </div>
+      <div class="grid lg:grid-cols-3 gap-6 mb-8">
+        <div class="space-y-6">
+          <div class="card p-6"><h3 class="text-xl font-bold mb-4">Leaderboard</h3><div id="leaderboard" class="space-y-2"></div></div>
+         <div id="loginHistory" class="text-sm max-h-64 overflow-y-auto space-y-2"></div>
+        </div>
+        <div class="lg:col-span-2 space-y-6">
+          <div class="card p-6"><h3 class="text-xl font-bold mb-4">Recent Tasks</h3><div id="recentTasks" class="masonry"></div></div>
+          <div class="card p-6">
+            <h3 class="text-xl font-bold mb-4">Assign Task</h3>
+            <div class="grid md:grid-cols-2 gap-4 mb-4">
+              <select id="assignEmp"></select>
+              <input type="text" id="taskText" placeholder="Task description...">
+            </div>
+            <div class="grid md:grid-cols-3 gap-4">
+              <select id="taskPriority"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select>
+              <input type="date" id="taskDue">
+              <button onclick="assignTask('admin')" class="btn btn-primary">Assign</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-8">
+        <h3 class="text-xl font-bold mb-4">Employee Cards</h3>
+        <div class="card p-4 mb-4"><input type="text" id="employeeSearch" placeholder="Search by Name, Mobile or Email..." class="w-full"></div>
+        <div id="employeeCardsGrid" class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
+      </div>
+      <div class="card p-6">
+        <h3 class="text-xl font-bold mb-4">Add New User</h3>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div><label class="block text-xs font-medium mb-1">Email *</label><input type="email" id="newEmpEmail" placeholder="user@email.com"></div>
+          <div><label class="block text-xs font-medium mb-1">Password *</label>
+            <div class="password-wrapper"><input type="password" id="newEmpPass" placeholder="Min 6 chars">
+              <button type="button" class="password-toggle" onclick="togglePassword('newEmpPass',this)"><i class="fas fa-eye"></i></button>
+            </div>
+          </div>
+          <div><label class="block text-xs font-medium mb-1">Full Name *</label><input type="text" id="newEmpName" placeholder="Full Name"></div>
+          <div><label class="block text-xs font-medium mb-1">Type</label><select id="newEmpType"><option value="employee">Employee</option><option value="chair">Chair</option><option value="admin">Admin</option></select></div>
+          <div><label class="block text-xs font-medium mb-1">Role</label><select id="newEmpRole"><option value="">Select Role</option><option>Tech Team</option><option>Graphic Designer </option><option>Content Writer</option><option>Social Media Team</option><option>HR</option><option>Marketing</option><option>Core team </option></select></div>
+          <div><label class="block text-xs font-medium mb-1">Designation</label><input type="text" id="newEmpDesig" placeholder="Designation"></div>
+          <div><label class="block text-xs font-medium mb-1">Mobile</label><input type="tel" id="newEmpMobile" placeholder="Mobile Number"></div>
+          <div class="sm:col-span-2"><label class="block text-xs font-medium mb-1">Photo</label>
+            <div class="file-upload"><input type="file" id="newEmpPhotoUpload" accept="image/*">
+              <label for="newEmpPhotoUpload" class="file-upload-label"><i class="fas fa-camera"></i> <span id="uploadButtonText">Choose Photo</span></label>
+              <div class="file-name" id="newUserPhotoName">No photo selected</div>
+            </div>
+            <div id="newUserPhotoPreview" class="mt-3 text-center"></div>
+          </div>
+          <div><label class="block text-xs font-medium mb-1">Date of Joining</label><input type="date" id="newEmpDOJ"></div>
+          <div class="sm:col-span-2"><button id="addUserButton" onclick="addUser()" class="btn btn-success w-full">Add User</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAIR DASHBOARD -->
+  <div id="chairDashboard" class="hidden min-h-screen">
+    <div class="navbar">
+      <div class="flex items-center gap-4"><img src="logogogo-removebg-preview.png" alt="Logo"></div>
+      <div class="flex items-center gap-2">
+        <span class="date" id="chairDate"></span>
+        <span id="chairTime"></span>
+      </div>
+    </div>
+    <div class="max-w-7xl mx-auto p-8">
+      <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-3">
+        <div><h1 class="text-3xl font-bold">Chair Dashboard</h1><p class="text-lg opacity-70" id="chairWelcome"></p></div>
+        <div class="flex flex-wrap gap-3 items-center">
+          <button onclick="refreshCurrentPage()" class="btn btn-outline">Refresh</button>
+          <button onclick="openMessagesPanel()" class="btn btn-outline">
+            <i class="fas fa-comments"></i> Messages
+          </button>
+
+          <button onclick="logout()" class="btn btn-danger">Logout</button>
+        </div>
+      </div>
+      <div class="quote-box mb-8">
+        <p class="quote">"Success is not final, failure is not fatal: It is the courage to continue that counts."</p>
+        <p class="quote-author">— Winston Churchill</p>
+      </div>
+      <div class="card p-6 mb-8 flex flex-col sm:flex-row items-center gap-6">
+        <div class="photo-container">
+          <div id="chairPhoto" class="w-28 h-28 rounded-full default-avatar overflow-hidden cursor-pointer" onclick="triggerPhotoUpload()"><i class="fas fa-camera text-2xl"></i></div>
+          <button onclick="deletePhoto(event)" class="photo-delete-btn">X</button>
+        </div>
+        <div class="text-center sm:text-left">
+          <h2 class="text-2xl font-bold" id="chairName"></h2>
+          <p class="text-lg opacity-70" id="chairDesig"></p>
+          <p class="opacity-60" id="chairRole"></p>
+          <p class="text-sm opacity-50" id="chairEmail"></p>
+          <p class="text-sm opacity-50" id="chairMobile"></p>
+        </div>
+      </div>
+      <div class="notes-card">
+        <div class="notes-header"><div class="notes-title"><i class="fas fa-sticky-note"></i><span>My Notes</span></div>
+          <div class="notes-clear" onclick="clearNotes()">Clear</div>
+        </div>
+        <textarea id="chairNotes" class="notes-textarea" placeholder="Jot down ideas, reminders, or anything..."></textarea>
+        <div class="notes-footer"><div class="auto-save"><i class="fas fa-circle"></i><span>Auto-saved</span></div><div>Note saved on typing...</div></div>
+      </div>
+      <div class="card p-6 mb-8">
+        <h3 class="text-xl font-bold mb-4">My Tasks</h3>
+        <div class="mb-4">
+          <input type="text" id="chairNewTask" placeholder="Add personal task..." class="mb-3">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <select id="chairNewPriority" class="flex-1"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select>
+            <input type="date" id="chairNewDue" class="flex-1">
+            <button onclick="addPersonalTask()" class="btn btn-primary flex-1">Add</button>
+          </div>
+        </div>
+        <div id="chairTaskContainer" class="masonry"></div>
+      </div>
+      <div class="card p-6 mb-8">
+        <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">Completed Tasks</h3>
+          <button onclick="clearCompletedTasks()" class="btn btn-outline btn-sm text-xs">Clear All</button>
+        </div>
+        <div id="chairCompletedContainer" class="masonry"></div>
+      </div>
+      <div class="card p-6 mb-8">
+        <h3 class="text-xl font-bold mb-4">Assign Task</h3>
+        <div class="grid md:grid-cols-2 gap-4 mb-4">
+          <select id="chairAssignEmp"></select>
+          <input type="text" id="chairTaskText" placeholder="Task...">
+        </div>
+        <div class="grid md:grid-cols-3 gap-4">
+          <select id="chairTaskPriority"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select>
+          <input type="date" id="chairTaskDue">
+          <button onclick="assignTask('chair')" class="btn btn-primary">Assign</button>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold mb-4">Team Members</h3>
+        <div class="card p-4 mb-4"><input type="text" id="chairSearchInput" placeholder="Search..."></div>
+        <div id="chairEmployeeGrid" class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- USER DASHBOARD -->
+  <div id="userDashboard" class="hidden min-h-screen">
+    <div class="navbar">
+      <div class="flex items-center gap-4"><img src="logogogo-removebg-preview.png" alt="Logo"></div>
+      <div class="flex items-center gap-2">
+        <span class="date" id="userDate"></span>
+        <span id="userTime"></span>
+      </div>
+    </div>
+    <div class="max-w-5xl mx-auto p-8">
+      <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-3">
+        <div><h1 class="text-3xl font-bold">My Dashboard</h1><p class="text-lg opacity-70" id="dashWelcome"></p></div>
+        <div class="flex flex-wrap gap-3 items-center">
+          <button onclick="refreshCurrentPage()" class="btn btn-outline">Refresh</button>
+          <button onclick="openMessagesPanel()" class="btn btn-outline">
+            <i class="fas fa-comments"></i> Messages
+          </button>
+
+          <button onclick="logout()" class="btn btn-danger">Logout</button>
+        </div>
+      </div>
+      <div class="quote-box mb-8">
+        <p class="quote">"The only way to do great work is to love what you do."</p>
+        <p class="quote-author">— Steve Jobs</p>
+      </div>
+      <div class="card p-6 mb-8 flex flex-col sm:flex-row items-center gap-6">
+        <div class="photo-container">
+          <div id="userPhoto" class="w-28 h-28 rounded-full default-avatar overflow-hidden cursor-pointer" onclick="triggerPhotoUpload()"><i class="fas fa-camera text-2xl"></i></div>
+          <button onclick="deletePhoto(event)" class="photo-delete-btn">X</button>
+        </div>
+        <div class="text-center sm:text-left">
+          <h2 class="text-2xl font-bold" id="userName"></h2>
+          <p class="text-lg opacity-70" id="userDesig"></p>
+          <p class="opacity-60" id="userRole"></p>
+          <p class="text-sm opacity-50" id="userEmail"></p>
+          <p class="text-sm opacity-50" id="userMobile"></p>
+          <p class="text-sm opacity-50" id="userDOJ"></p>
+        </div>
+      </div>
+      <div class="notes-card">
+        <div class="notes-header"><div class="notes-title"><i class="fas fa-sticky-note"></i><span>My Notes</span></div>
+          <div class="notes-clear" onclick="clearNotes()">Clear</div>
+        </div>
+        <textarea id="userNotes" class="notes-textarea" placeholder="Jot down ideas, reminders, or anything..."></textarea>
+        <div class="notes-footer"><div class="auto-save"><i class="fas fa-circle"></i><span>Auto-saved</span></div><div>Note saved on typing...</div></div>
+      </div>
+      <div class="card p-5 mb-6">
+        <input type="text" id="newTaskInput" placeholder="Add new task..." class="mb-3">
+        <div class="flex flex-col sm:flex-row gap-3">
+          <select id="newPriority" class="flex-1"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select>
+          <input type="date" id="newDue" class="flex-1">
+          <button onclick="addPersonalTask()" class="btn btn-primary flex-1">Add Task</button>
+        </div>
+      </div>
+      <div class="card p-4 mb-6 flex flex-wrap gap-2 justify-center">
+        <button onclick="filterTasks('all')" class="btn btn-outline">All</button>
+        <button onclick="filterTasks('todo')" class="btn btn-outline">To Do</button>
+        <button onclick="filterTasks('ongoing')" class="btn btn-outline">Ongoing</button>
+        <button onclick="filterTasks('completed')" class="btn btn-outline">Done</button>
+      </div>
+      <div id="taskContainer" class="masonry"></div>
+      <div class="card p-6 mt-8">
+        <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">Completed Tasks</h3>
+          <button onclick="clearCompletedTasks()" class="btn btn-outline btn-sm text-xs">Clear All</button>
+        </div>
+        <div id="userCompletedContainer" class="masonry"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="employeeModal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50 p-4">
+    <div class="card p-8 rounded-2xl max-w-4xl w-full max-h-screen overflow-y-auto">
+      <div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-bold">Employee Details</h2><button onclick="closeModal()" class="text-xl">X</button></div>
+      <div id="modalEditSection" class="flex flex-col md:flex-row gap-6 mb-6"></div>
+      <div class="mb-6"><div class="flex justify-between mb-2"><span>Task Progress</span><span id="modalProgressText">0%</span></div>
+        <div class="progress-bar"><div id="modalProgressFill" class="progress-fill"></div></div>
+      </div>
+      <div id="modalButtons" class="flex gap-3 mb-6"></div>
+      <div class="space-y-6">
+        <div><h4 class="font-semibold text-yellow-400 mb-2">To Do</h4><div id="modalTodo" class="masonry"></div></div>
+        <div><h4 class="font-semibold text-blue-400 mb-2">Ongoing</h4><div id="modalOngoing" class="masonry"></div></div>
+        <div><h4 class="font-semibold text-green-400 mb-2">Completed</h4><div id="modalCompleted" class="masonry"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="messagesModal" 
+      class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center p-4 z-50">
+
+    <div class="card p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">Messages</h2>
+        <button onclick="closeMessagesPanel()">X</button>
+      </div>
+
+      <!-- Chat Selector -->
+      <select id="chatUserSelect" class="mb-4"></select>
+
+      <!-- Community Button -->
+      <button class="btn btn-primary w-full mb-4" onclick="loadCommunityChat()">
+        <i class="fas fa-users"></i> Open Community Chat
+      </button>
+
+      <!-- Messages Box -->
+      <div id="chatMessages" class="space-y-3 p-4 bg-[#1a1a1a] rounded-lg max-h-80 overflow-y-auto"></div>
+
+      <!-- Message Input -->
+      <div class="flex gap-2 mt-4">
+        <input id="chatInput" type="text" placeholder="Type a message..." class="flex-1">
+        <button onclick="sendMessage()" class="btn btn-primary">Send</button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- BOTTOM UI -->
+  <button id="toTopBtn" onclick="scrollToTop()"><i class="fas fa-arrow-up"></i></button>
+  <div class="social-sidebar">
+    <a href="ausdauergroups@gmail.com" class="social-icon"><i class="fas fa-envelope"></i></a>
+    <a href="https://www.instagram.com/p/DME0Tcqhoer/" target="_blank" class="social-icon"><i class="fab fa-instagram"></i></a>
+    <a href="https://www.linkedin.com/company/ausdauer-groups/posts/?feedView=all" target="_blank" class="social-icon"><i class="fab fa-linkedin"></i></a>
+  </div>
+  <div class="mobile-social-bar">
+    <a href="ausdauergroups@gmail.com"><i class="fas fa-envelope"></i></a>
+    <a href="https://www.instagram.com/p/DME0Tcqhoer/" target="_blank"><i class="fab fa-instagram"></i></a>
+    <a href="https://www.linkedin.com/company/ausdauer-groups/posts/?feedView=all" target="_blank"><i class="fab fa-linkedin"></i></a>
+  </div>
+  <div id="toastContainer"></div>
+  <input type="file" id="photoUploadInput" accept="image/*" style="display:none;">
+
+  <script>
+    // === SUPABASE INIT ===
+    const SUPABASE_URL = 'https://pxgwvtlovmsquuxgroco.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4Z3d2dGxvdm1zcXV1eGdyb2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyNjc1MDksImV4cCI6MjA3ODg0MzUwOX0.pZGLPCrhBjRG3AOZ4bGvE9dZ-aeuffPJ7gaQu515x70';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const DEFAULT_AVATAR = `<i class="fas fa-user text-2xl"></i>`;
+    let currentUser = null;
+    let currentModalProfile = null;
+    let allProfiles = [];
+    let taskFilter = 'all';
+
+    function show(id) {
+      ['loginScreen','adminDashboard','chairDashboard','userDashboard'].forEach(d => {
+        const el = document.getElementById(d); if (el) el.classList.add('hidden');
+      });
+      const target = document.getElementById(id); if (target) target.classList.remove('hidden');
+      updateDateTime();
+      document.querySelector('.social-sidebar').style.display = (id === 'loginScreen') ? 'none' : 'flex';
+      window.scrollTo(0,0);
+    }
+
+    function updateDateTime() {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+      const timeStr = now.toLocaleTimeString([], {hour:'2-digit', min:'2-digit', second:'2-digit'});
+      document.querySelectorAll('[id$="Date"]').forEach(el => el.textContent = dateStr + ' | ');
+      document.querySelectorAll('[id$="Time"]').forEach(el => el.textContent = timeStr);
+    }
+    setInterval(updateDateTime, 1000);
+
+    function showToast(msg, timeout = 3000) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = msg;
+      document.getElementById('toastContainer').appendChild(toast);
+      setTimeout(() => toast.remove(), timeout);
+    }
+
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+
+    function refreshCurrentPage() {
+      if (!currentUser) return;
+      if (currentUser.type === 'admin') loadAdminDashboard();
+      else if (currentUser.type === 'chair') loadChairDashboard();
+      else if (currentUser.type === 'employee') loadUserDashboard();
+    }
+
+    async function handleLogin() {
+      const email = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;  // ← Must be string
+      const button = document.getElementById('loginButton');
+
+      if (!email || !password) {
+        alert('Please enter email and password');
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = 'Logging in...';
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: password  // ← Must be string, not 'pass'
+        });
+
+        if (error) {
+          console.error('Login error:', error);
+          alert(error.message);
+          return;
+        }
+
+        if (data.user) {
+          const ip = await fetch("https://api.ipify.org?format=json").then(r => r.json()).catch(()=>({ip:"unknown"}));
+          const ua = navigator.userAgent;
+
+        await supabase.from("login_history").insert({
+          user_id: data.user.id,
+          email: email,
+          ip_address: ip.ip,
+          user_agent: ua
+        });
+
+          await fetchProfileAndLoadDashboard(data.user.id);
+        }
+
+      } catch (err) {
+        console.error('Unexpected error:', err);
+        alert('Login failed. Check console.');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Login';
+      }
+    }
+
+    function renderLoginHistory(logs) {
+      const container = document.getElementById("loginHistory");
+
+      if (!logs || logs.length === 0) {
+        container.innerHTML = '<p class="opacity-50">No login history found.</p>';
+        return;
+      }
+
+      container.innerHTML = logs.map(log => `
+        <div class="p-2 border-b border-gray-700">
+          <p class="font-medium">${log.email}</p>
+          <p class="text-xs opacity-70">
+            ${new Date(log.created_at).toLocaleString()}
+          </p>
+          <p class="text-xs opacity-50">IP: ${log.ip_address}</p>
+          <p class="text-xs opacity-50 truncate">UA: ${log.user_agent}</p>
+        </div>
+      `).join('');
+    }
+
+
+    async function logLogin(user) {
+      const ip = await fetch("https://api64.ipify.org?format=json")
+        .then(r => r.json()).then(d => d.ip).catch(() => "Unknown");
+
+      const { data: logData, error: logError } = await supabase
+        .from("login_history")
+        .insert({
+          user_id: data.user.id,
+          email: email,
+          ip_address: ip.ip,
+          user_agent: ua
+        })
+        .select();
+
+      console.log("LOGIN HISTORY INSERT RESULT:", logData, logError);
+      if (error) console.error("Failed to log login:", error);
+    }
+
+
+    async function fetchProfileAndLoadDashboard(userId) {
+      const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+      if (error || !profile) { alert('Profile not found.'); await logout(); return; }
+      currentUser = profile;
+      if (profile.type === 'admin') { show('adminDashboard'); loadAdminDashboard(); }
+      else if (profile.type === 'chair') { show('chairDashboard'); loadChairDashboard(); }
+      else { show('userDashboard'); loadUserDashboard(); }
+    }
+
+    async function logout() {
+      await supabase.auth.signOut();
+      currentUser = null; allProfiles = [];
+      show('loginScreen');
+    }
+
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) await fetchProfileAndLoadDashboard(session.user.id);
+      else show('loginScreen');
+    }
+
+    function renderLoginHistory(logs) {
+      const container = document.getElementById("loginHistory");
+
+      if (!logs.length) {
+        container.innerHTML = '<p class="opacity-50">No login history found.</p>';
+        return;
+      }
+
+      container.innerHTML = logs.map(log => `
+        <div class="p-2 border-b border-gray-700">
+          <p class="font-medium">${log.email}</p>
+          <p class="text-xs opacity-70">${new Date(log.login_time).toLocaleString()}</p>
+          <p class="text-xs opacity-50">IP: ${log.ip_address}</p>
+          <p class="text-xs opacity-50 truncate">UA: ${log.user_agent}</p>
+        </div>
+      `).join('');
+    }
+
+
+    async function loadAdminDashboard() {
+
+      const loginLogs = await supabase
+        .from("login_history")
+        .select("*")
+        .order("login_time", { ascending: false })
+        .limit(30);
+
+      if (loginLogs.error) {
+        console.error(loginLogs.error);
+      } else {
+        renderLoginHistory(loginLogs.data);
+      }
+
+      const [profilesRes, tasksRes] = await Promise.all([
+        supabase.from('profiles').select('*'),
+        supabase.from('tasks').select('*, user:user_id (id, name)').order('id', { ascending: false }).limit(20)
+      ]);
+      if (profilesRes.error) return alert(profilesRes.error.message);
+      if (tasksRes.error) return alert(tasksRes.error.message);
+      allProfiles = profilesRes.data;
+      renderAssignDropdown(allProfiles, 'assignEmp');
+      renderEmployeeCards(allProfiles, 'admin');
+      renderRecentTasks(tasksRes.data);
+      renderLeaderboard(allProfiles);
+      document.getElementById('employeeSearch').oninput = debounce(() => renderEmployeeCards(allProfiles, 'admin'), 300);
+    }
+    
+
+    function renderAssignDropdown(profiles, elementId) {
+      const s = document.getElementById(elementId);
+
+      let allowed = [];
+
+      if (currentUser.type === 'admin') {
+        // Admin → can assign task to everyone
+        allowed = profiles.filter(p => p.id !== currentUser.id);
+      } else if (currentUser.type === 'chair') {
+        // Chair → can assign to employees + chairs (not admin)
+        allowed = profiles.filter(p => p.type !== 'admin' && p.id !== currentUser.id);
+      }
+
+      s.innerHTML =
+        '<option value="">Select Member</option>' +
+        allowed
+          .map(e => `<option value="${e.id}">${e.name} (${e.type})</option>`)
+          .join('');
+    }
+
+    function getAssignedByText(task, empId) {
+      if (!task.assigned_by) return '';
+      if (task.assigned_by === empId) return 'Assigned by: You';
+      const assigner = allProfiles.find(p => p.id === task.assigned_by);
+      return assigner ? `Assigned by: ${assigner.name}` : 'Assigned by: Unknown';
+    }
+
+    function renderRecentTasks(tasks) {
+      const container = document.getElementById('recentTasks');
+      if (!tasks || tasks.length === 0) { container.innerHTML = '<p class="opacity-50">No tasks found.</p>'; return; }
+      container.innerHTML = tasks.map(task => {
+        const empName = task.profiles ? task.profiles.name : 'Unknown User';
+        return `
+        <div class="task-card">
+          <div class="task-priority priority-${task.priority}">${task.priority.toUpperCase()}</div>
+          <p class="font-medium text-sm">${task.text}</p>
+          <p class="text-xs opacity-70 mt-1">${empName} • ${task.status}</p>
+          <p class="text-xs opacity-60 mt-1">${getAssignedByText(task, task.profiles?.id)}</p>
+          ${task.due_date ? `<p class="text-xs opacity-60">Due: ${task.due_date}</p>` : ''}
+        </div>`;
+      }).join('');
+    }
+
+    async function renderLeaderboard(profiles) {
+      const lb = document.getElementById('leaderboard');
+
+      // 1. Get all tasks
+      const { data: tasks, error } = await supabase.from('tasks').select('*');
+      if (error) {
+        lb.innerHTML = '<p class="opacity-50">Failed to load stats</p>';
+        return;
+      }
+
+      // 2. Build ranking data
+      const scores = profiles.map(p => {
+        const userTasks = tasks.filter(t => t.user_id === p.id);
+        const total = userTasks.length;
+        const completed = userTasks.filter(t => t.status === 'completed').length;
+        const ongoing = userTasks.filter(t => t.status === 'ongoing').length;
+        const todo = userTasks.filter(t => t.status === 'todo').length;
+
+        const progress = total ? Math.round((completed / total) * 100) : 0;
+
+        return {
+          name: p.name,
+          total,
+          completed,
+          ongoing,
+          todo,
+          progress
+        };
+      });
+
+      // 3. Sort by progress or completed tasks
+      scores.sort((a, b) => b.completed - a.completed);
+
+      // 4. Render leaderboard
+      lb.innerHTML = scores.length ? scores.map((s, i) => `
+        <div class="flex justify-between items-center p-3 rounded ${i === 0 ? 'bg-purple-900' : 'bg-gray-800'}">
+          <div>
+            <p class="font-semibold">${i + 1}. ${s.name}</p>
+            <p class="text-xs opacity-70">
+              Total: ${s.total} | Done: ${s.completed} | Ongoing: ${s.ongoing} | Pending: ${s.todo}
+            </p>
+          </div>
+          <span class="text-sm font-bold">${s.progress}%</span>
+        </div>
+      `).join('') : '<p class="opacity-50">No users yet</p>';
+    }
+
+    function renderEmployeeCards(profiles, mode) {
+      const search = (document.getElementById(mode === 'admin' ? 'employeeSearch' : 'chairSearchInput')?.value || '').toLowerCase();
+      const grid = document.getElementById(mode === 'admin' ? 'employeeCardsGrid' : 'chairEmployeeGrid');
+      const list = profiles.filter(e =>
+        (e.name.toLowerCase().includes(search) || (e.mobile || '').includes(search) || (e.email || '').toLowerCase().includes(search)) &&
+        (mode !== 'chair' || e.type === 'employee')
+      );
+      grid.innerHTML = list.map(emp => {
+        const progress = 0;
+        return `
+          <div class="card p-5 cursor-pointer" onclick="openModal('${emp.id}')">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-12 h-12 rounded-full default-avatar overflow-hidden">
+                ${emp.photo_url ? `<img src="${emp.photo_url}" class="w-full h-full object-cover" onerror="this.style.display='none';this.parentNode.innerHTML='${DEFAULT_AVATAR}'">` : DEFAULT_AVATAR}
+              </div>
+              <div><p class="font-semibold">${emp.name}</p><p class="text-sm opacity-70">${emp.designation || 'N/A'}</p></div>
+            </div>
+            <div class="text-xs space-y-1">
+              <p>${emp.email || 'No Email'}</p><p>${emp.mobile || 'No Mobile'}</p>
+              <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
+              <p class="text-right">${progress}% done</p>
+            </div>
+          </div>`;
+      }).join('') || '<p class="opacity-50 col-span-full text-center">No users found.</p>';
+    }
+
+    async function openModal(profileId) {
+      const { data: profile, error: profileError } = await supabase.from('profiles').select('*').eq('id', profileId).single();
+      if (profileError) return alert(profileError.message);
+      currentModalProfile = profile;
+      const { data: tasks, error: tasksError } = await supabase
+        .from('tasks')
+        .select('*, assigner:assigned_by (id, name)')
+        .eq('user_id', profileId);
+
+      if (tasksError) return alert(tasksError.message);
+
+      const isAdmin = currentUser.type === 'admin';
+      const photoHtml = profile.photo_url ? `<img src="${profile.photo_url}" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none';this.parentNode.innerHTML='${DEFAULT_AVATAR}'">` : DEFAULT_AVATAR;
+      const photoContainer = `<div class="photo-container"><div id="modalPhoto" class="w-32 h-32 rounded-full default-avatar overflow-hidden">${photoHtml}</div></div>`;
+      let editHtml = '';
+      if (isAdmin) {
+        editHtml = `<div class="flex-1 space-y-3">
+          <input type="text" id="modalName" value="${profile.name}" placeholder="Name">
+          <input type="email" id="modalEmail" value="${profile.email || ''}" placeholder="Email" disabled>
+          <input type="text" id="modalDesig" value="${profile.designation || ''}" placeholder="Designation">
+          <select id="modalRole">
+            ${['','Tech Team','GraphicDesigner','Content Writer','Social Media Team','HR','Marketing','Core Team'].map(r=>`<option value="${r}" ${r === profile.role ? 'selected':''}>${r || 'Select Role'}</option>`).join('')}
+          </select>
+          <input type="tel" id="modalMobile" value="${profile.mobile || ''}" placeholder="Mobile">
+          <input type="date" id="modalDOJ" value="${profile.doj || ''}">
+          <input type="password" id="modalPassword" placeholder="New Password (optional)">
+          <p class="text-xs opacity-60">Password cannot be changed from here.</p>
+        </div>`;
+      } else {
+        editHtml = `<div class="flex-1 space-y-2 text-sm">
+          <p><strong>Name:</strong> ${profile.name}</p>
+          <p><strong>Email:</strong> ${profile.email || 'N/A'}</p>
+          <p><strong>Designation:</strong> ${profile.designation || 'N/A'}</p>
+          <p><strong>Role:</strong> ${profile.role || 'N/A'}</p>
+          <p><strong>Mobile:</strong> ${profile.mobile || 'N/A'}</p>
+          <p><strong>DOJ:</strong> ${profile.doj || 'N/A'}</p>
+        </div>`;
+      }
+      document.getElementById('modalEditSection').innerHTML = photoContainer + editHtml;
+      const todo = tasks.filter(t => t.status === 'todo');
+      const ongoing = tasks.filter(t => t.status === 'ongoing');
+      const completed = tasks.filter(t => t.status === 'completed');
+      const total = tasks.length;
+      const progress = total ? Math.round(completed.length / total * 100) : 0;
+      document.getElementById('modalProgressText').textContent = `${progress}%`;
+      document.getElementById('modalProgressFill').style.width = `${progress}%`;
+      document.getElementById('modalButtons').innerHTML = isAdmin ? `
+        <button onclick="saveModalChanges()" class="btn btn-success">Save Changes</button>
+        <button onclick="deleteUser()" class="btn btn-danger">Delete User</button>` : '';
+      document.getElementById('modalTodo').innerHTML = renderTaskCards(todo, profile.id) || '<p class="opacity-50">No tasks</p>';
+      document.getElementById('modalOngoing').innerHTML = renderTaskCards(ongoing, profile.id) || '<p class="opacity-50">No tasks</p>';
+      document.getElementById('modalCompleted').innerHTML = renderTaskCards(completed, profile.id, true) || '<p class="opacity-50">No completed tasks</p>';
+      document.getElementById('employeeModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('employeeModal').classList.add('hidden');
+      currentModalProfile = null;
+    }
+
+    async function saveModalChanges() {
+      if (!currentModalProfile) return;
+      const updates = {
+        name: document.getElementById('modalName').value.trim(),
+        designation: document.getElementById('modalDesig').value.trim(),
+        role: document.getElementById('modalRole').value,
+        mobile: document.getElementById('modalMobile').value.trim(),
+        doj: document.getElementById('modalDOJ').value || null,
+      };
+      const { error } = await supabase.from('profiles').update(updates).eq('id', currentModalProfile.id);
+      if (error) return alert(error.message);
+      showToast('Changes saved!');
+      closeModal();
+      loadAdminDashboard();
+    }
+
+    async function deleteUser() {
+      if (!currentModalProfile || !confirm(`Delete ${currentModalProfile.name}? This is permanent.`)) return;
+      try {
+        await supabase.from('tasks').delete().eq('user_id', currentModalProfile.id);
+        await supabase.from('notes').delete().eq('user_id', currentModalProfile.id);
+        await supabase.from('profiles').delete().eq('id', currentModalProfile.id);
+        showToast('User deleted.');
+        closeModal();
+        loadAdminDashboard();
+      } catch (error) { alert(`Error: ${error.message}`); }
+    }
+
+    async function assignTask(mode = 'admin') {
+      const empId = document.getElementById(mode === 'admin' ? 'assignEmp' : 'chairAssignEmp').value;
+      const text = document.getElementById(mode === 'admin' ? 'taskText' : 'chairTaskText').value.trim();
+      const priority = document.getElementById(mode === 'admin' ? 'taskPriority' : 'chairTaskPriority').value;
+      const due_date = document.getElementById(mode === 'admin' ? 'taskDue' : 'chairTaskDue').value || null;
+      if (!empId || !text) return alert('Select user and enter task');
+      const newTask = { user_id: empId, text, priority, due_date, status: 'todo', assigned_by: currentUser.id };
+      const { error } = await supabase.from('tasks').insert(newTask);
+      if (error) return alert(error.message);
+      if (mode === 'admin') { document.getElementById('taskText').value = ''; const { data } = await supabase.from('tasks').select('*, profiles(name, id)').order('id', { ascending: false }).limit(20); if (data) renderRecentTasks(data); }
+      else document.getElementById('chairTaskText').value = '';
+      showToast('Task assigned!');
+    }
+
+    async function addPersonalTask() {
+      const text = document.getElementById(currentUser.type === 'chair' ? 'chairNewTask' : 'newTaskInput').value.trim();
+      const priority = document.getElementById(currentUser.type === 'chair' ? 'chairNewPriority' : 'newPriority').value;
+      const due_date = document.getElementById(currentUser.type === 'chair' ? 'chairNewDue' : 'newDue').value || null;
+      if (!text) return alert('Enter task');
+      const newTask = { user_id: currentUser.id, text, priority, due_date, status: 'todo', assigned_by: currentUser.id };
+      const { error } = await supabase.from('tasks').insert(newTask);
+      if (error) return alert(error.message);
+      showToast('Task added!');
+      if (currentUser.type === 'chair') { document.getElementById('chairNewTask').value = ''; loadChairDashboard(); }
+      else { document.getElementById('newTaskInput').value = ''; loadUserDashboard(); }
+    }
+
+    function filterTasks(f) { taskFilter = f; loadUserDashboard(); }
+
+    async function moveTask(taskId, newStatus) {
+      const { error } = await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId);
+      if (error) alert(error.message); else showToast(`Task moved to ${newStatus}!`);
+      refreshCurrentPage();
+      if(currentModalProfile) openModal(currentModalProfile.id);
+    }
+
+    async function deleteTask(taskId) {
+      if (!confirm('Delete this task?')) return;
+      const { error } = await supabase.from('tasks').delete().eq('id', taskId);
+      if (error) alert(error.message); else showToast('Task deleted!');
+      refreshCurrentPage();
+      if(currentModalProfile) openModal(currentModalProfile.id);
+    }
+
+    async function clearCompletedTasks() {
+      if (!confirm('Clear all completed tasks?')) return;
+      const { error } = await supabase.from('tasks').delete().eq('user_id', currentUser.id).eq('status', 'completed');
+      if (error) return alert(error.message);
+      showToast('Completed tasks cleared!');
+      refreshCurrentPage();
+    }
+
+    async function loadUserDashboard() {
+      const user = currentUser;
+      document.getElementById('dashWelcome').textContent = `Welcome back, ${user.name}!`;
+      document.getElementById('userName').textContent = user.name;
+      document.getElementById('userDesig').textContent = user.designation || 'N/A';
+      document.getElementById('userRole').textContent = user.role || 'N/A';
+      document.getElementById('userEmail').textContent = user.email || 'N/A';
+      document.getElementById('userMobile').textContent = user.mobile || 'N/A';
+      document.getElementById('userDOJ').textContent = user.doj || 'N/A';
+      const photoEl = document.getElementById('userPhoto');
+      photoEl.innerHTML = user.photo_url ? `<img src="${user.photo_url}" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none';this.parentNode.innerHTML='${DEFAULT_AVATAR}'">` : DEFAULT_AVATAR;
+      const { data: allTasks, error: taskError } = await supabase.from('tasks').select('*').eq('user_id', user.id).order('id', { ascending: false });
+      if (taskError) return alert(taskError.message);
+      const todo = allTasks.filter(t => t.status === 'todo');
+      const ongoing = allTasks.filter(t => t.status === 'ongoing');
+      const completed = allTasks.filter(t => t.status === 'completed');
+      let filteredTasks = [];
+      if (taskFilter === 'all') filteredTasks = [...todo, ...ongoing];
+      else if (taskFilter === 'todo') filteredTasks = todo;
+      else if (taskFilter === 'ongoing') filteredTasks = ongoing;
+      else if (taskFilter === 'completed') filteredTasks = completed;
+      document.getElementById('taskContainer').innerHTML = renderTaskCards(filteredTasks, user.id) || '<p class="col-span-full text-center opacity-50 p-8">No tasks in this view.</p>';
+      document.getElementById('userCompletedContainer').innerHTML = renderTaskCards(completed, user.id, true) || '<p class="text-center opacity-50 p-8">No completed tasks</p>';
+      loadNotes();
+    }
+
+    async function loadChairDashboard() {
+      const user = currentUser;
+      document.getElementById('chairWelcome').textContent = `Welcome, ${user.name}`;
+      document.getElementById('chairName').textContent = user.name;
+      document.getElementById('chairDesig').textContent = user.designation || 'N/A';
+      document.getElementById('chairRole').textContent = user.role || 'N/A';
+      document.getElementById('chairEmail').textContent = user.email || 'N/A';
+      document.getElementById('chairMobile').textContent = user.mobile || 'N/A';
+      const photoEl = document.getElementById('chairPhoto');
+      photoEl.innerHTML = user.photo_url ? `<img src="${user.photo_url}" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none';this.parentNode.innerHTML='${DEFAULT_AVATAR}'">` : DEFAULT_AVATAR;
+      const { data: allTasks, error: taskError } = await supabase.from('tasks').select('*').eq('user_id', user.id).order('id', { ascending: false });
+      if (taskError) return alert(taskError.message);
+      const todo = allTasks.filter(t => t.status === 'todo');
+      const ongoing = allTasks.filter(t => t.status === 'ongoing');
+      const completed = allTasks.filter(t => t.status === 'completed');
+      document.getElementById('chairTaskContainer').innerHTML = renderTaskCards([...todo, ...ongoing], user.id) || '<p class="text-center opacity-50 p-8">No tasks</p>';
+      document.getElementById('chairCompletedContainer').innerHTML = renderTaskCards(completed, user.id, true) || '<p class="text-center opacity-50 p-8">No completed tasks</p>';
+      const { data: profiles, error: profileError } = await supabase.from('profiles').select('*').neq('id', user.id);
+      if (profileError) return alert(profileError.message);
+      allProfiles = profiles;
+      renderAssignDropdown(allProfiles, 'chairAssignEmp');
+      renderEmployeeCards(allProfiles, 'chair');
+      document.getElementById('chairSearchInput').oninput = debounce(() => renderEmployeeCards(allProfiles, 'chair'), 300);
+      loadNotes();
+    }
+
+    function renderTaskCards(tasks, userId, isCompleted = false) {
+      if (!tasks || tasks.length === 0) return '';
+      return tasks.map(task => `
+        <div class="task-card ${isCompleted ? 'opacity-80' : ''}">
+          ${isCompleted ? '<div class="task-priority priority-high">DONE</div>' : `<div class="task-priority priority-${task.priority}">${task.priority.toUpperCase()}</div>`}
+          <p class="font-medium text-sm">${task.text}</p>
+          <p class="text-xs opacity-60 mt-1">${getAssignedByText(task, userId)}</p>
+          ${task.due_date ? `<p class="text-xs opacity-60">Due: ${task.due_date}</p>` : ''}
+          ${!isCompleted ? `
+          <div class="flex gap-1 mt-2 text-xs">
+            ${task.status !== 'todo' ? `<button onclick="moveTask(${task.id}, 'todo')" class="text-yellow-400"><</button>` : ''}
+            ${task.status !== 'ongoing' ? `<button onclick="moveTask(${task.id}, 'ongoing')" class="text-blue-400">></button>` : ''}
+            <button onclick="moveTask(${task.id}, 'completed')" class="text-green-400">Done</button>
+            <button onclick="deleteTask(${task.id})" class="text-red-400 ml-auto">X</button>
+          </div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    const debouncedSaveNotes = debounce(async (text) => {
+      const { error } = await supabase.from('notes').upsert({ user_id: currentUser.id, content: text }, { onConflict: 'user_id' });
+      if (error) console.error('Error saving note:', error);
+    }, 1000);
+
+    async function loadNotes() {
+      const id = currentUser.type === 'chair' ? 'chairNotes' : 'userNotes';
+      const textarea = document.getElementById(id);
+      const { data, error } = await supabase.from('notes').select('content').eq('user_id', currentUser.id).single();
+      if (error && error.code !== 'PGRST116') return alert(error.message);
+      textarea.value = data ? data.content : '';
+      textarea.oninput = () => debouncedSaveNotes(textarea.value);
+    }
+
+    async function clearNotes() {
+      if (!confirm('Clear all notes?')) return;
+      const id = currentUser.type === 'chair' ? 'chairNotes' : 'userNotes';
+      const textarea = document.getElementById(id);
+      const { error } = await supabase.from('notes').update({ content: null }).eq('user_id', currentUser.id);
+      if (error) return alert(error.message);
+      textarea.value = '';
+      showToast('Notes cleared!');
+    }
+
+    function triggerPhotoUpload(){
+      const input = document.getElementById('photoUploadInput');
+      input.onchange = handlePhotoChange;
+      input.click();
+    }
+
+    async function handlePhotoChange(e){
+      const file = e.target.files[0];
+      if (!file) return;
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${currentUser.id}/${Date.now()}.${fileExt}`;
+      showToast('Uploading photo...');
+      const { error: uploadError } = await supabase.storage.from('photos').upload(fileName, file, { cacheControl: '3600', upsert: false });
+      if (uploadError) return alert(uploadError.message);
+      const { data: { publicUrl } } = supabase.storage.from('photos').getPublicUrl(fileName);
+      const { error: updateError } = await supabase.from('profiles').update({ photo_url: publicUrl }).eq('id', currentUser.id);
+      if (updateError) return alert(updateError.message);
+      currentUser.photo_url = publicUrl;
+      refreshCurrentPage();
+      showToast('Photo updated!');
+    }
+
+    async function deletePhoto(event){
+      event.stopPropagation();
+      if (!confirm('Delete this photo?')) return;
+      const { error } = await supabase.from('profiles').update({ photo_url: null }).eq('id', currentUser.id);
+      if (error) return alert(error.message);
+      currentUser.photo_url = null;
+      refreshCurrentPage();
+      showToast('Photo removed!');
+    }
+
+    async function addUser() {
+      const email = document.getElementById("newEmpEmail").value.trim();
+      const password = document.getElementById("newEmpPass").value.trim();
+      const name = document.getElementById("newEmpName").value.trim();
+
+      if (!email || !password || !name) {
+        alert("Email, password, and name required");
+        return;
+      }
+
+      const { data: signData, error: signError } = await supabase.auth.signUp({
+        email,
+        password
+      });
+
+      if (signError) {
+        console.error("SIGN-UP ERROR:", signError);
+        alert(signError.message);
+        return;
+      }
+
+      const userId = signData?.user?.id;
+      if (!userId) {
+        alert("Signup returned no user ID");
+        return;
+      }
+
+      const profile = {
+        id: userId,
+        email,
+        name,
+        type: document.getElementById("newEmpType").value,
+        role: document.getElementById("newEmpRole").value,
+        designation: document.getElementById("newEmpDesig").value || null,
+        mobile: document.getElementById("newEmpMobile").value || null,
+        doj: document.getElementById("newEmpDOJ").value || null,
+        photo_url: null
+      };
+
+      const { error: profileError } = await supabase.from("profiles").insert(profile);
+
+      if (profileError) {
+        console.error("PROFILE INSERT ERROR:", profileError);
+        alert("Failed to insert profile: " + profileError.message);
+        return;
+      }
+
+      alert("User created!");
+    }
+
+
+    document.getElementById('newEmpPhotoUpload').addEventListener('change', function() {
+      const file = this.files[0];
+      const nameEl = document.getElementById('newUserPhotoName');
+      const preview = document.getElementById('newUserPhotoPreview');
+      const buttonText = document.getElementById('uploadButtonText');
+      if (file) {
+        nameEl.textContent = file.name;
+        buttonText.textContent = 'Change Photo';
+        const url = URL.createObjectURL(file);
+        preview.innerHTML = `<img src="${url}" class="max-h-32 rounded-md mx-auto block shadow-md" onload="URL.revokeObjectURL(this.src)">`;
+      } else {
+        nameEl.textContent = 'No photo selected';
+        buttonText.textContent = 'Choose Photo';
+        preview.innerHTML = '';
+      }
+    });
+
+    function togglePassword(id,btn){
+      const inp=document.getElementById(id);
+      const icon=btn.querySelector('i');
+      if(inp.type==='password'){inp.type='text';icon.classList.replace('fa-eye','fa-eye-slash');}
+      else{inp.type='password';icon.classList.replace('fa-eye-slash','fa-eye');}
+    }
+
+    async function downloadDailyReport() {
+      if (!currentUser || currentUser.type !== 'admin') return alert('Access denied');
+      showToast('Generating report...');
+      const [profilesRes, tasksRes] = await Promise.all([
+        supabase.from('profiles').select('*'),
+        supabase.from('tasks').select('*')
+      ]);
+      if (profilesRes.error) return alert(profilesRes.error.message);
+      if (tasksRes.error) return alert(tasksRes.error.message);
+      const data = profilesRes.data.map(emp => {
+        const userTasks = tasksRes.data.filter(t => t.user_id === emp.id);
+        const todo = userTasks.filter(t => t.status === 'todo').length;
+        const ongoing = userTasks.filter(t => t.status === 'ongoing').length;
+        const completed = userTasks.filter(t => t.status === 'completed').length;
+        const total = userTasks.length;
+        const prog = total ? Math.round(completed / total * 100) : 0;
+        return { "Name": emp.name, "Email": emp.email, "Type": emp.type, "Role": emp.role || 'N/A', "Designation": emp.designation || 'N/A', "To Do": todo, "Ongoing": ongoing, "Completed": completed, "Progress": `${prog}%` };
+      });
+      const Ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, Ws, "Daily Report");
+      const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+      XLSX.writeFile(wb, `AUSDAUER_Daily_Report_${today}.xlsx`);
+      showToast('Report downloaded!');
+    }
+
+    window.addEventListener('scroll',()=>{document.getElementById('toTopBtn').classList.toggle('show',window.scrollY>300);});
+    function scrollToTop(){window.scrollTo({top:0,behavior:'smooth'});}
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkSession();
+    });
+
+    /* ============================================
+      CHAT SYSTEM (PRIVATE + COMMUNITY)
+      WITH AUTO-DELETE OLDEST AFTER 5 MESSAGES
+   ============================================ */
+
+    let currentChatUser = null;
+    let isCommunityChat = false;
+
+    /* ---------- OPEN/CLOSE CHAT PANEL ---------- */
+
+    function openMessagesPanel() {
+      document.getElementById("messagesModal").classList.remove("hidden");
+      loadChatUserList();
+    }
+
+    function closeMessagesPanel() {
+      document.getElementById("messagesModal").classList.add("hidden");
+      currentChatUser = null;
+      isCommunityChat = false;
+    }
+
+    /* ---------- LOAD USER LIST FOR PRIVATE CHAT ---------- */
+
+    async function loadChatUserList() {
+      const { data: users } = await supabase.from("profiles").select("*");
+
+      const select = document.getElementById("chatUserSelect");
+      select.innerHTML =
+        `<option value="">Select a user to chat</option>` +
+        users
+          .filter(u => u.id !== currentUser.id)
+          .map(u => `<option value="${u.id}">${u.name} (${u.type})</option>`)
+          .join("");
+
+      select.onchange = (e) => {
+        isCommunityChat = false;
+        currentChatUser = e.target.value;
+        loadPrivateChat();
+      };
+    }
+
+    /* ---------- LOAD PRIVATE CHAT MESSAGES ---------- */
+
+    async function loadPrivateChat() {
+      if (!currentChatUser) return;
+
+      const { data: msgs } = await supabase
+        .from("messages")
+        .select("*")
+        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+        .order("created_at", { ascending: true });
+
+      const filtered = msgs.filter(
+        m =>
+          m.sender_id === currentChatUser ||
+          m.receiver_id === currentChatUser
+      );
+
+      renderChatMessages(filtered.map(formatMessage));
+    }
+
+    /* ---------- LOAD COMMUNITY CHAT MESSAGES ---------- */
+
+    async function loadCommunityChat() {
+      isCommunityChat = true;
+
+      const { data: msgs } = await supabase
+        .from("community_messages")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+      renderChatMessages(msgs.map(formatMessage));
+    }
+
+    /* ---------- CLEANUP (KEEP ONLY LAST 5 MESSAGES) ---------- */
+
+    async function cleanupMessages(table, userFilter = null) {
+      let query = supabase
+        .from(table)
+        .select("id, sender_id, receiver_id")
+        .order("created_at", { ascending: true });
+
+      if (userFilter) {
+        query = query.or(
+          `sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`
+        )
+        .or(
+          `sender_id.eq.${userFilter},receiver_id.eq.${userFilter}`
+        );
+      }
+
+      const { data: allMsgs } = await query;
+
+      if (!allMsgs || allMsgs.length <= 5) return;
+
+      const excess = allMsgs.length - 5;
+      const idsToDelete = allMsgs.slice(0, excess).map(m => m.id);
+
+      await supabase.from(table).delete().in("id", idsToDelete);
+    }
+
+    /* ---------- SEND MESSAGE (PRIVATE + COMMUNITY) ---------- */
+
+    async function sendMessage() {
+      const text = document.getElementById("chatInput").value.trim();
+      if (!text) return;
+
+      if (isCommunityChat) {
+        await supabase.from("community_messages").insert({
+          sender_id: currentUser.id,
+          message: text
+        });
+
+        await cleanupMessages("community_messages");
+        loadCommunityChat();
+
+      } else {
+        await supabase.from("messages").insert({
+          sender_id: currentUser.id,
+          receiver_id: currentChatUser,
+          message: text
+        });
+
+        await cleanupMessages("messages", currentChatUser);
+        loadPrivateChat();
+      }
+
+      document.getElementById("chatInput").value = "";
+    }
+
+    /* ---------- FORMAT MESSAGE ---------- */
+
+    function formatMessage(m) {
+      const mine = m.sender_id === currentUser.id;
+      return `
+        <div class="p-2 rounded-lg ${mine ? 'bg-purple-600 text-white ml-auto' : 'bg-gray-700 text-white mr-auto'} max-w-xs">
+          ${m.message}
+          <div class="text-[10px] opacity-60 mt-1">${new Date(m.created_at).toLocaleTimeString()}</div>
+        </div>
+      `;
+    }
+
+    /* ---------- RENDER CHAT UI ---------- */
+
+    function renderChatMessages(htmlList) {
+      const box = document.getElementById("chatMessages");
+      box.innerHTML = htmlList.join("");
+      box.scrollTop = box.scrollHeight;
+    }
+
+
+  </script>
+</body>
+</html>
